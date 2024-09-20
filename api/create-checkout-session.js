@@ -1,17 +1,17 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
-    // Handle CORS
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow any origin, you can replace '*' with specific domains if needed
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // Set CORS headers to allow requests from your frontend
+    res.setHeader('Access-Control-Allow-Origin', 'https://airlinelimousines.com');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Handle preflight requests
+    // Handle preflight OPTIONS request
     if (req.method === 'OPTIONS') {
-        return res.status(200).end(); // Preflight request response
+        return res.status(200).end();
     }
 
-    const { amount } = req.body;
+    const { amount } = req.body;  // Get amount from request body
 
     if (!amount || amount <= 0) {
         return res.status(400).json({ error: 'Invalid amount' });
@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
             payment_method_types: ['card'],
             line_items: [{
                 price_data: {
-                    currency: 'cad',
+                    currency: 'cad',  // Adjust currency if needed
                     product_data: {
                         name: 'Limo Ride',
                     },
@@ -40,6 +40,7 @@ module.exports = async (req, res) => {
         res.status(200).json({ id: session.id });
     } catch (error) {
         console.error('Error creating Stripe Checkout session:', error);
+
         res.status(500).json({
             error: 'Failed to create checkout session',
             message: error.message,
