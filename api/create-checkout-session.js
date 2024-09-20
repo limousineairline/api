@@ -1,4 +1,4 @@
-const stripe = require('stripe')(process.env.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);  // Use your actual Stripe secret key
+const stripe = require('stripe')(process.env.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);  // Use your actual Stripe secret key
 
 module.exports = async (req, res) => {
     const { amount } = req.body;  // Get the amount from the frontend
