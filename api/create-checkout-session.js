@@ -1,4 +1,4 @@
-const stripe = require('stripe')('sk_test_51PrW2S06BpvW5voC5gWZGv17kAh6iey5txhYi6lK1TWTs0FSw8W4HLm1xlj9mjSEAvnDPKTD4SO0s9BjOIR85ohb00FONL61ge');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
     const { amount } = req.body;  // Get amount from request body
