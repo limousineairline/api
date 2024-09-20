@@ -1,7 +1,15 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
 module.exports = async (req, res) => {
-    const { amount } = req.body;  // Get amount from request body
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins, or specify your frontend origin like 'http://127.0.0.1:5500'
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();  // Send response for preflight requests
+        return;
+    }
+
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const { amount } = req.body;
 
     if (!amount || amount <= 0) {
         return res.status(400).json({ error: 'Invalid amount' });
@@ -13,26 +21,23 @@ module.exports = async (req, res) => {
             payment_method_types: ['card'],
             line_items: [{
                 price_data: {
-                    currency: 'cad',  // Adjust currency if needed
+                    currency: 'cad',
                     product_data: {
                         name: 'Limo Ride',
                     },
-                    unit_amount: amount,  // Amount in cents
+                    unit_amount: amount,
                 },
                 quantity: 1,
             }],
             mode: 'payment',
- success_url: 'https://airlinelimousines.com/success',  // Replace with your success URL
-            cancel_url: 'https://airlinelimousines.com/cancel',    // Replace with your cancel URL
+            success_url: 'https://airlinelimousines.com/success',
+            cancel_url: 'https://airlinelimousines.com/cancel',
         });
 
         // Return the session ID to the client
         res.status(200).json({ id: session.id });
     } catch (error) {
-        // Print the detailed error in the console for debugging
         console.error('Error creating Stripe Checkout session:', error);
-
-        // Return a more detailed error to the client for debugging
         res.status(500).json({
             error: 'Failed to create checkout session',
             message: error.message,
