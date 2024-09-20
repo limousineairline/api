@@ -1,4 +1,4 @@
-const stripe = require('stripe')('YOUR_SECRET_STRIPE_KEY'); // Replace with your Stripe secret key
+const stripe = require('stripe')('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'); // Replace with your Stripe secret key
 
 module.exports = async (req, res) => {
     const { amount } = req.body;  // Get the amount from the frontend
