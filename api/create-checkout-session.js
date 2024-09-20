@@ -1,14 +1,16 @@
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 module.exports = async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins, or specify your frontend origin like 'http://127.0.0.1:5500'
+    // Handle CORS
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow any origin, you can replace '*' with specific domains if needed
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
-        res.status(200).end();  // Send response for preflight requests
-        return;
+        return res.status(200).end(); // Preflight request response
     }
 
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const { amount } = req.body;
 
     if (!amount || amount <= 0) {
@@ -25,13 +27,13 @@ module.exports = async (req, res) => {
                     product_data: {
                         name: 'Limo Ride',
                     },
-                    unit_amount: amount,
+                    unit_amount: amount,  // Amount in cents
                 },
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: 'https://airlinelimousines.com/success',
-            cancel_url: 'https://airlinelimousines.com/cancel',
+            success_url: 'https://airlinelimousines.com/success',  // Replace with your success URL
+            cancel_url: 'https://airlinelimousines.com/cancel',    // Replace with your cancel URL
         });
 
         // Return the session ID to the client
