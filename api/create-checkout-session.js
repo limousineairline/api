@@ -1,40 +1,40 @@
+const express = require('express');
+const app = express();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const cors = require('cors');
 
-module.exports = async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+// Define allowed origins for CORS
+const allowedOrigins = ['http://127.0.0.1:5500', 'https://airlinelimousines.com'];
+
+// Middleware to set CORS headers
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    // If the request is OPTIONS, simply return the headers for preflight check
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+});
 
-    // Proceed with the rest of your logic
-    const { amount } = req.body;
-    if (!amount || amount <= 0) {
-        return res.status(400).json({ error: 'Invalid amount' });
-    }
+app.use(express.json());
 
+app.post('/create-payment-intent', async (req, res) => {
     try {
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-                price_data: {
-                    currency: 'cad',
-                    product_data: { name: 'Limo Ride' },
-                    unit_amount: amount,
-                },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: 'https://airlinelimousines.com/success',
-            cancel_url: 'https://airlinelimousines.com/cancel',
+        const { amount } = req.body;
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount,  // Amount in cents
+            currency: 'cad', // Replace with your currency
         });
 
-        res.status(200).json({ id: session.id });
+        res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
-        console.error('Error creating Stripe session:', error);
-        res.status(500).json({ error: 'Failed to create checkout session' });
+        res.status(500).json({ error: error.message });
     }
-};
+});
+
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
+});
